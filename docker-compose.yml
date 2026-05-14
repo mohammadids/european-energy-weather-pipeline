@@ -20,9 +20,10 @@ services:
       - "8501:8501"
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-mohammad}:${POSTGRES_PASSWORD:-mohammad_password}@postgres:5432/${POSTGRES_DB:-energy_weather}
     depends_on:
       - postgres
 
 volumes:
   postgres_data:
-
