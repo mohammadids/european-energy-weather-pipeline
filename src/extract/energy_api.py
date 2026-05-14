@@ -1,0 +1,22 @@
+import os
+
+from entsoe import Client
+
+
+def get_entsoe_client():
+    return Client(api_key=os.getenv("ENTSOE_API_KEY"))
+
+
+def extract_load(country_code, start_date, end_date):
+    client = get_entsoe_client()
+    df = client.load.actual(start_date, end_date, country=country_code)
+    df["country_code"] = country_code
+    return df.rename(columns={"timestamp": "timestamp_utc", "value": "load_mw"})
+
+
+def extract_day_ahead_prices(country_code, start_date, end_date):
+    client = get_entsoe_client()
+    df = client.prices.day_ahead(start_date, end_date, country=country_code)
+    df["country_code"] = country_code
+    return df.rename(columns={"timestamp": "timestamp_utc", "value": "price_eur_mwh"})
+

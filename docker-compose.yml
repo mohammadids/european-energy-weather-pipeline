@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: energy_weather_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mohammad}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mohammad_password}
+      POSTGRES_DB: ${POSTGRES_DB:-energy_weather}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+
+  dashboard:
+    build: .
+    container_name: energy_weather_dashboard
+    command: streamlit run dashboard/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+
