@@ -1,9 +1,13 @@
 import os
 from dataclasses import dataclass
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:
+    load_dotenv = None
 
-load_dotenv()
+if load_dotenv:
+    load_dotenv()
 
 
 @dataclass(frozen=True)
@@ -25,4 +29,3 @@ COUNTRIES = {
     "ES": CountryConfig("ES", "Madrid", 40.4168, -3.7038),
     "DE_LU": CountryConfig("DE_LU", "Berlin", 52.5200, 13.4050),
 }
-

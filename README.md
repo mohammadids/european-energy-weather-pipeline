@@ -4,6 +4,10 @@ Author: **Mohammad Mohammadi**
 
 Status: **In progress**
 
+## Current Milestone
+
+The current working milestone is live weather extraction from the Open-Meteo API. This proves that the project can collect real public API data before the PostgreSQL and ENTSO-E layers are completed.
+
 ## Project Summary
 
 I am Mohammad Mohammadi, a Bachelor student in Data Analytics in Italy. In this project, I am building an end-to-end data engineering pipeline that collects European weather and electricity market data from public APIs, stores it in PostgreSQL, validates data quality, automates ETL jobs, and visualizes insights in an interactive dashboard.
@@ -139,6 +143,19 @@ Create a `.env` file:
 cp .env.example .env
 ```
 
+Run a small Open-Meteo API smoke test:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install pandas requests
+python -m scripts.run_weather_sample --start-date 2024-01-01 --end-date 2024-01-03 --countries IT FR
+```
+
+The sample output is written to `data/processed/`.
+
+Docker is required for the PostgreSQL and dashboard workflow. Install Docker Desktop first if `docker --version` does not work.
+
 Start PostgreSQL and the dashboard:
 
 ```bash
@@ -154,4 +171,3 @@ python -m src.pipeline.prefect_flow
 ## Resume-Ready Summary
 
 Built an end-to-end European energy and weather analytics pipeline using Python, PostgreSQL, Docker, Prefect, SQL, and Streamlit to ingest, validate, store, analyze, and visualize public API data.
-
