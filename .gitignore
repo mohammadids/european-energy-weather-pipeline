@@ -21,8 +21,10 @@ data/processed/*
 # Notebooks
 .ipynb_checkpoints/
 
+# Local/share images
+docs/linkedin-assets/
+
 # OS/editor
 .DS_Store
 .idea/
 .vscode/
-
