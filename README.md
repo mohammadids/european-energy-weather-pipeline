@@ -136,6 +136,16 @@ Country summary table generated from the PostgreSQL analytics mart:
 
 ![Country summary](docs/screenshots/country-summary.png)
 
+## Key Findings
+
+For the loaded period from `2024-01-01` to `2024-03-31`:
+
+- Italy had the highest average day-ahead electricity price among the selected markets at `92.32 EUR/MWh`.
+- Spain had the lowest average day-ahead electricity price at `44.87 EUR/MWh`, with some daily averages close to zero.
+- Germany/Luxembourg and France had the highest average electricity load, both above `57,000 MW`.
+- France reached the highest peak load in the dataset at `82,800 MW`.
+- Average temperature and electricity load were negatively correlated in all four selected markets, strongest in France with a correlation of `-0.800`, suggesting winter heating demand effects in this period.
+
 ## Current Impact Metrics
 
 - Countries tracked: 4 (`IT`, `FR`, `ES`, `DE_LU`).
