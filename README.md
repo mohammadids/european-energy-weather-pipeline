@@ -6,7 +6,7 @@ Status: **In progress**
 
 ## Current Milestone
 
-The current working milestone is live weather extraction from the Open-Meteo API. This proves that the project can collect real public API data before the PostgreSQL and ENTSO-E layers are completed.
+The current working milestone is an integrated Open-Meteo and ENTSO-E pipeline. The project now loads hourly weather, electricity load, and day-ahead electricity price data into PostgreSQL, refreshes daily analytics marts, and serves the results in a Streamlit dashboard.
 
 ## Project Summary
 
