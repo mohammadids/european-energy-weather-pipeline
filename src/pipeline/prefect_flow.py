@@ -1,3 +1,5 @@
+import os
+
 from prefect import flow, task
 
 from src.config import COUNTRIES, DATABASE_URL
@@ -53,6 +55,16 @@ def energy_weather_pipeline(start_date="2024-01-01", end_date="2024-01-07", incl
     refresh_analytics()
 
 
-if __name__ == "__main__":
-    energy_weather_pipeline()
+def env_flag(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.lower() in {"1", "true", "yes", "y"}
 
+
+if __name__ == "__main__":
+    energy_weather_pipeline(
+        start_date=os.getenv("START_DATE", "2024-01-01"),
+        end_date=os.getenv("END_DATE", "2024-01-07"),
+        include_energy=env_flag("INCLUDE_ENERGY", False),
+    )

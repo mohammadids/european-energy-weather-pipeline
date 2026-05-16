@@ -37,6 +37,8 @@ Author: Mohammad Mohammadi
 
 ## fact_energy_load_hourly
 
+ENTSO-E load can arrive hourly or sub-hourly depending on the country. The pipeline stores hourly average load in this table.
+
 | Column | Description |
 |---|---|
 | country_code | Country or bidding-zone code |
@@ -44,6 +46,8 @@ Author: Mohammad Mohammadi
 | load_mw | Actual electricity load in megawatts |
 
 ## fact_energy_price_hourly
+
+For Italy, ENTSO-E day-ahead prices are queried from the `IT_NORD` bidding zone and stored under the project-level country code `IT`.
 
 | Column | Description |
 |---|---|
@@ -59,4 +63,3 @@ Author: Mohammad Mohammadi
 | timestamp_utc | Hourly UTC timestamp |
 | energy_source | Generation source, such as solar, wind, fossil gas, hydro |
 | generation_mw | Electricity generation in megawatts |
-

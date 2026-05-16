@@ -168,6 +168,19 @@ Run the Prefect flow manually:
 python -m src.pipeline.prefect_flow
 ```
 
+After receiving ENTSO-E API access, add the token to `.env`:
+
+```bash
+ENTSOE_API_KEY=your_token_here
+```
+
+Rebuild the Docker image so the ENTSO-E client is installed, then run the full weather plus energy pipeline:
+
+```bash
+docker compose up -d --build
+docker compose exec -e INCLUDE_ENERGY=true dashboard python -m src.pipeline.prefect_flow
+```
+
 ## Resume-Ready Summary
 
 Built an end-to-end European energy and weather analytics pipeline using Python, PostgreSQL, Docker, Prefect, SQL, and Streamlit to ingest, validate, store, analyze, and visualize public API data.
