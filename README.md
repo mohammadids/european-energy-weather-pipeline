@@ -204,6 +204,14 @@ docker compose up -d --build
 docker compose exec -e INCLUDE_ENERGY=true dashboard python -m src.pipeline.prefect_flow
 ```
 
+Run automated tests:
+
+```bash
+docker compose run --rm dashboard python -m pytest tests
+```
+
+The test suite covers weather cleaning, ENTSO-E load resampling, price cleaning, duplicate handling, and validation checks for invalid/null data.
+
 ## Resume-Ready Summary
 
 Built an end-to-end European energy and weather analytics pipeline using Python, PostgreSQL, Docker, Prefect, SQL, and Streamlit to ingest, validate, store, analyze, and visualize public API data.
