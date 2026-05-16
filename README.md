@@ -126,6 +126,16 @@ The Streamlit dashboard includes:
 - High-price day analysis and negative-price hour monitoring.
 - Data quality coverage for source tables and analytics marts.
 
+## Dashboard Preview
+
+Overview page with filters, headline metrics, and energy trend charts:
+
+![Dashboard overview](docs/screenshots/dashboard-overview.png)
+
+Country summary table generated from the PostgreSQL analytics mart:
+
+![Country summary](docs/screenshots/country-summary.png)
+
 ## Current Impact Metrics
 
 - Countries tracked: 4 (`IT`, `FR`, `ES`, `DE_LU`).
