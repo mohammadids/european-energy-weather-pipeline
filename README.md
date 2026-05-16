@@ -2,7 +2,7 @@
 
 Author: **Mohammad Mohammadi**
 
-Status: **In progress**
+Status: **Working MVP, in progress**
 
 ## Current Milestone
 
@@ -100,40 +100,43 @@ Streamlit dashboard and SQL analysis
     └── processed/
 ```
 
-## Implementation Plan
+## Completed Work and Next Steps
 
-1. Build weather extraction from Open-Meteo.
-2. Create PostgreSQL schema for weather and energy analytics.
-3. Load cleaned weather data into PostgreSQL.
-4. Add ENTSO-E electricity demand and price extraction.
-5. Add data quality checks for duplicates, nulls, freshness, and valid ranges.
-6. Orchestrate the pipeline with Prefect.
-7. Build SQL analytics marts.
-8. Create a Streamlit dashboard.
-9. Add forecasting or anomaly detection as an optional extension.
-10. Document project results, screenshots, and metrics.
+1. [x] Build weather extraction from Open-Meteo.
+2. [x] Create PostgreSQL schema for weather and energy analytics.
+3. [x] Load cleaned weather data into PostgreSQL.
+4. [x] Add ENTSO-E electricity demand and price extraction.
+5. [x] Add data quality checks for duplicates, nulls, freshness, and valid ranges.
+6. [x] Orchestrate the pipeline with Prefect.
+7. [x] Build SQL analytics marts.
+8. [x] Create a multi-tab Streamlit dashboard.
+9. [ ] Add renewable generation data.
+10. [ ] Add forecasting or anomaly detection as an optional extension.
+11. [ ] Document final screenshots and project results.
 
-## Dashboard Plan
+## Dashboard Features
 
-The dashboard will include:
+The Streamlit dashboard includes:
 
-- Overview of countries, records, freshness, and pipeline runs.
-- Weather vs electricity demand trends.
-- Country and city comparison.
-- Renewable generation and weather indicators.
-- Electricity price trends and negative-price hours.
-- Data quality and anomaly monitoring.
-- Optional demand forecasting page.
+- Overview metrics for countries, days, daily records, hourly fact rows, and latest data date.
+- Daily electricity load and day-ahead price trends.
+- Weather vs electricity demand scatter analysis.
+- Temperature-load correlation by country.
+- Country comparison for load, price, temperature, wind, and solar radiation.
+- High-price day analysis and negative-price hour monitoring.
+- Data quality coverage for source tables and analytics marts.
 
-## Planned Impact Metrics
+## Current Impact Metrics
 
-- Number of countries tracked.
-- Number of hourly records processed.
-- Pipeline runtime.
-- Data freshness.
-- Data quality pass rate.
-- Number of dashboard pages.
-- Forecasting accuracy if the ML extension is implemented.
+- Countries tracked: 4 (`IT`, `FR`, `ES`, `DE_LU`).
+- Date range loaded: `2024-01-01` to `2024-03-31`.
+- Weather fact rows: 8,736.
+- Electricity load fact rows: 8,736.
+- Electricity price fact rows: 8,736.
+- Total hourly fact rows: 26,208.
+- Daily analytics mart rows: 364.
+- Dashboard tabs: 5.
+- Latest 3-month local Prefect run completed in about 14 seconds.
 
 ## How to Run Locally
 
