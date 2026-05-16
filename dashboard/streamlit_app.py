@@ -1,9 +1,17 @@
 import os
+import sys
+from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 from sqlalchemy import create_engine, text
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.analysis.anomaly_detection import detect_daily_anomalies
 
 
 st.set_page_config(
@@ -139,6 +147,10 @@ if filtered.empty:
     st.stop()
 
 filtered["date"] = pd.to_datetime(filtered["date"])
+anomalies = detect_daily_anomalies(filtered)
+flagged_anomalies = anomalies[anomalies["is_anomaly"]].sort_values(
+    "max_abs_z_score", ascending=False
+)
 table_metrics["min_ts"] = pd.to_datetime(table_metrics["min_ts"])
 table_metrics["max_ts"] = pd.to_datetime(table_metrics["max_ts"])
 
@@ -160,8 +172,8 @@ metric_columns[2].metric("Daily Records", f"{daily_records:,}")
 metric_columns[3].metric("Hourly Fact Rows", f"{fact_records:,}")
 metric_columns[4].metric("Latest Date", str(latest_date))
 
-tab_overview, tab_demand, tab_prices, tab_comparison, tab_quality = st.tabs(
-    ["Overview", "Weather and Demand", "Prices", "Country Comparison", "Data Quality"]
+tab_overview, tab_demand, tab_prices, tab_comparison, tab_anomalies, tab_quality = st.tabs(
+    ["Overview", "Weather and Demand", "Prices", "Country Comparison", "Anomalies", "Data Quality"]
 )
 
 with tab_overview:
@@ -295,15 +307,11 @@ with tab_prices:
     price_trend_fig.update_layout(height=430, legend_title_text="")
     st.plotly_chart(price_trend_fig, width="stretch")
 
-    price_anomalies = filtered.copy()
-    price_anomalies["price_zscore"] = price_anomalies.groupby("country_label")[
-        "avg_price_eur_mwh"
-    ].transform(lambda series: (series - series.mean()) / series.std(ddof=0))
-    high_price_days = price_anomalies[price_anomalies["price_zscore"] >= 2].sort_values(
-        ["price_zscore", "avg_price_eur_mwh"], ascending=False
+    high_price_days = anomalies[anomalies["price_z_score"] >= 2].sort_values(
+        ["price_z_score", "avg_price_eur_mwh"], ascending=False
     )
     if high_price_days.empty:
-        high_price_days = price_anomalies.nlargest(10, "avg_price_eur_mwh")
+        high_price_days = anomalies.nlargest(10, "avg_price_eur_mwh")
 
     left, right = st.columns([2, 1])
     with left:
@@ -401,6 +409,74 @@ with tab_comparison:
     weather_fig.update_yaxes(matches=None)
     weather_fig.update_layout(height=390, showlegend=False)
     st.plotly_chart(weather_fig, width="stretch")
+
+with tab_anomalies:
+    anomaly_columns = st.columns(4)
+    anomaly_columns[0].metric("Flagged Days", f"{len(flagged_anomalies):,}")
+    anomaly_columns[1].metric("Price Anomalies", f"{int(anomalies['is_price_anomaly'].sum()):,}")
+    anomaly_columns[2].metric("Load Anomalies", f"{int(anomalies['is_load_anomaly'].sum()):,}")
+    anomaly_columns[3].metric("Threshold", "z-score >= 2")
+
+    st.caption(
+        "Anomalies are calculated inside each country, so each market is compared with its own normal range."
+    )
+
+    if flagged_anomalies.empty:
+        st.info("No daily price or load anomalies were detected for the selected filters.")
+    else:
+        anomaly_scatter = px.scatter(
+            anomalies,
+            x="date",
+            y="avg_price_eur_mwh",
+            color="anomaly_type",
+            size="max_abs_z_score",
+            hover_data={
+                "country_label": True,
+                "avg_load_mw": ":.0f",
+                "price_z_score": ":.2f",
+                "load_z_score": ":.2f",
+            },
+            labels={
+                "date": "Date",
+                "avg_price_eur_mwh": "Average price (EUR/MWh)",
+                "anomaly_type": "Anomaly type",
+                "country_label": "Country",
+                "avg_load_mw": "Average load (MW)",
+                "price_z_score": "Price z-score",
+                "load_z_score": "Load z-score",
+            },
+            template="plotly_dark",
+        )
+        anomaly_scatter.update_layout(height=430, legend_title_text="")
+        st.plotly_chart(anomaly_scatter, width="stretch")
+
+        st.subheader("Flagged Daily Anomalies")
+        st.dataframe(
+            flagged_anomalies[
+                [
+                    "date",
+                    "country_label",
+                    "anomaly_type",
+                    "avg_price_eur_mwh",
+                    "avg_load_mw",
+                    "price_z_score",
+                    "load_z_score",
+                    "max_abs_z_score",
+                ]
+            ],
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "date": st.column_config.DateColumn("Date"),
+                "country_label": "Country",
+                "anomaly_type": "Type",
+                "avg_price_eur_mwh": st.column_config.NumberColumn("Avg Price (EUR/MWh)", format="%.2f"),
+                "avg_load_mw": st.column_config.NumberColumn("Avg Load (MW)", format="%.0f"),
+                "price_z_score": st.column_config.NumberColumn("Price z-score", format="%.2f"),
+                "load_z_score": st.column_config.NumberColumn("Load z-score", format="%.2f"),
+                "max_abs_z_score": st.column_config.NumberColumn("Max abs z-score", format="%.2f"),
+            },
+        )
 
 with tab_quality:
     expected_daily_rows = country_count * date_count

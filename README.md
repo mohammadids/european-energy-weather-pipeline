@@ -1,217 +1,262 @@
-# End-to-End Data Pipeline for European Energy and Weather Analytics
+# European Energy and Weather Analytics Pipeline
 
 Author: **Mohammad Mohammadi**
 
-Status: **Working MVP, in progress**
+Status: **working MVP**
 
-## Current Milestone
+This is my end-to-end data engineering portfolio project. I built it to practice the parts of a real analytics pipeline that are usually missing from notebook-only projects: API extraction, cleaning, PostgreSQL storage, scheduled ETL logic, data validation, testing, Docker, and a dashboard.
 
-The current working milestone is an integrated Open-Meteo and ENTSO-E pipeline. The project now loads hourly weather, electricity load, and day-ahead electricity price data into PostgreSQL, refreshes daily analytics marts, and serves the results in a Streamlit dashboard.
+The current version combines weather data from Open-Meteo with electricity load and day-ahead price data from ENTSO-E for Italy, France, Spain, and Germany/Luxembourg.
 
-## Project Summary
+## What the Project Answers
 
-I am Mohammad Mohammadi, a Bachelor student in Data Analytics in Italy. In this project, I am building an end-to-end data engineering pipeline that collects European weather and electricity market data from public APIs, stores it in PostgreSQL, validates data quality, automates ETL jobs, and visualizes insights in an interactive dashboard.
+The main question I am exploring is:
 
-The project studies how weather conditions such as temperature, wind speed, and solar radiation relate to electricity demand, renewable generation, and electricity prices across selected European countries.
+> How do weather conditions relate to electricity demand and electricity prices across selected European markets?
 
-## Real-World Problem
+At this stage the project focuses on three months of hourly data from `2024-01-01` to `2024-03-31`. Renewable generation is still planned, so the current analysis is about weather, load, and prices.
 
-Electricity systems are increasingly affected by weather. Cold days increase heating demand, hot days increase cooling demand, wind affects wind generation, and solar radiation affects solar production. Analysts and grid stakeholders need reliable pipelines that connect weather data with energy-market indicators.
+## Current Results
 
-This project answers the question:
+The latest local run loaded:
 
-> How do weather conditions affect electricity demand, renewable generation, and electricity prices across selected European countries?
+- 4 countries: `IT`, `FR`, `ES`, `DE_LU`
+- 8,736 hourly weather rows
+- 8,736 hourly electricity load rows
+- 8,736 hourly electricity price rows
+- 26,208 total hourly fact rows
+- 364 rows in the daily analytics mart
+- 6 Streamlit dashboard tabs
+- 14 automated tests
 
-## Planned Data Sources
+The full three-month pipeline run takes about 14 seconds on my laptop after Docker is running.
 
-- **Open-Meteo Historical Weather API** for hourly weather variables.
-- **ENTSO-E Transparency Platform** for electricity load, prices, and generation data.
-- **Eurostat Energy Data** for optional country-level energy context.
-- **Terna Data Portal** as an optional Italy-focused extension.
+## Key Findings So Far
+
+For the loaded period:
+
+- Italy had the highest average day-ahead electricity price: `92.32 EUR/MWh`.
+- Spain had the lowest average day-ahead electricity price: `44.87 EUR/MWh`.
+- France and Germany/Luxembourg had the highest average electricity load, both above `57,000 MW`.
+- France had the highest peak load in the dataset: `82,800 MW`.
+- Temperature and load were negatively correlated in all four markets. The strongest relationship was in France, with a correlation of `-0.800`.
+
+These results are based on the current sample period only. I do not treat them as general conclusions about the whole European energy market.
 
 ## Tech Stack
 
 - Python
-- SQL
 - PostgreSQL
-- Public APIs
-- Prefect for ETL orchestration
-- Pandas and SQLAlchemy
-- Data validation with Pandera
-- Streamlit and Plotly for dashboarding
+- SQLAlchemy
+- Pandas
+- Prefect
+- Streamlit
+- Plotly
 - Docker and Docker Compose
-- GitHub documentation
+- pytest
+- GitHub Actions
+
+## Data Sources
+
+- **Open-Meteo Historical Weather API** for hourly temperature, wind, humidity, precipitation, cloud cover, and shortwave radiation.
+- **ENTSO-E Transparency Platform** for electricity load and day-ahead market prices.
+
+Notes:
+
+- ENTSO-E load data can be sub-hourly for some countries. I resample it to hourly averages before loading it.
+- Italy day-ahead price data is queried from the `IT_NORD` bidding zone and stored under `IT` in this project.
+- Eurostat and renewable generation data are not included yet.
 
 ## Architecture
 
 ```text
-Open-Meteo API / ENTSO-E API / Eurostat API
+Open-Meteo API + ENTSO-E API
         |
         v
-Python extraction scripts
+Python extraction code
         |
         v
-Raw and cleaned data processing
+Cleaning and validation
         |
         v
-PostgreSQL staging and fact tables
+PostgreSQL fact tables
         |
         v
-Data validation checks
+Daily analytics mart
         |
         v
-Prefect ETL orchestration
+Streamlit dashboard
         |
         v
-Analytics marts in PostgreSQL
-        |
-        v
-Streamlit dashboard and SQL analysis
+pytest + GitHub Actions checks
 ```
 
 ## Repository Structure
 
 ```text
 .
-├── README.md
-├── docker-compose.yml
-├── Dockerfile
-├── requirements.txt
-├── .env.example
+├── dashboard/
+│   └── streamlit_app.py
+├── data/
+│   ├── processed/
+│   └── raw/
 ├── docs/
 │   ├── architecture.md
-│   └── data_dictionary.md
+│   ├── data_dictionary.md
+│   └── screenshots/
+├── scripts/
 ├── sql/
 │   ├── 01_schema.sql
 │   └── 02_example_queries.sql
 ├── src/
-│   ├── config.py
+│   ├── analysis/
 │   ├── extract/
-│   ├── transform/
 │   ├── load/
-│   ├── validation/
-│   └── pipeline/
-├── dashboard/
-│   └── streamlit_app.py
-├── notebooks/
+│   ├── pipeline/
+│   ├── transform/
+│   └── validation/
 ├── tests/
-└── data/
-    ├── raw/
-    └── processed/
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+└── README.md
 ```
 
-## Completed Work and Next Steps
+## Database Model
 
-1. [x] Build weather extraction from Open-Meteo.
-2. [x] Create PostgreSQL schema for weather and energy analytics.
-3. [x] Load cleaned weather data into PostgreSQL.
-4. [x] Add ENTSO-E electricity demand and price extraction.
-5. [x] Add data quality checks for duplicates, nulls, freshness, and valid ranges.
-6. [x] Orchestrate the pipeline with Prefect.
-7. [x] Build SQL analytics marts.
-8. [x] Create a multi-tab Streamlit dashboard.
-9. [ ] Add renewable generation data.
-10. [ ] Add forecasting or anomaly detection as an optional extension.
-11. [ ] Document final screenshots and project results.
+The project uses PostgreSQL with dimension and fact tables:
 
-## Dashboard Features
+- `dim_country`
+- `dim_city`
+- `fact_weather_hourly`
+- `fact_energy_load_hourly`
+- `fact_energy_price_hourly`
+- `fact_generation_hourly`
+- `mart_daily_country_energy_weather`
+
+The dashboard reads from the daily mart for most analysis. The source fact tables are still available for row counts, coverage checks, and debugging.
+
+## Pipeline Steps
+
+The Prefect flow currently does the following:
+
+1. Creates or updates the PostgreSQL schema.
+2. Extracts hourly weather data from Open-Meteo.
+3. Cleans weather fields and checks basic quality rules.
+4. Loads weather rows into PostgreSQL.
+5. If `INCLUDE_ENERGY=true`, extracts ENTSO-E load and price data.
+6. Cleans and resamples ENTSO-E data.
+7. Loads energy rows into PostgreSQL.
+8. Refreshes the daily analytics mart.
+
+## Dashboard
 
 The Streamlit dashboard includes:
 
-- Overview metrics for countries, days, daily records, hourly fact rows, and latest data date.
-- Daily electricity load and day-ahead price trends.
-- Weather vs electricity demand scatter analysis.
-- Temperature-load correlation by country.
-- Country comparison for load, price, temperature, wind, and solar radiation.
-- High-price day analysis and negative-price hour monitoring.
-- Data quality coverage for source tables and analytics marts.
+- overview metrics
+- daily load and price trends
+- weather vs demand analysis
+- country comparison
+- anomaly detection for unusual daily load and price values
+- data quality and table coverage checks
 
-## Dashboard Preview
-
-Overview page with filters, headline metrics, and energy trend charts:
+Dashboard overview:
 
 ![Dashboard overview](docs/screenshots/dashboard-overview.png)
 
-Country summary table generated from the PostgreSQL analytics mart:
+Country summary:
 
 ![Country summary](docs/screenshots/country-summary.png)
 
-## Key Findings
+## Anomaly Detection
 
-For the loaded period from `2024-01-01` to `2024-03-31`:
+I added a simple anomaly detection layer on top of the daily analytics mart.
 
-- Italy had the highest average day-ahead electricity price among the selected markets at `92.32 EUR/MWh`.
-- Spain had the lowest average day-ahead electricity price at `44.87 EUR/MWh`, with some daily averages close to zero.
-- Germany/Luxembourg and France had the highest average electricity load, both above `57,000 MW`.
-- France reached the highest peak load in the dataset at `82,800 MW`.
-- Average temperature and electricity load were negatively correlated in all four selected markets, strongest in France with a correlation of `-0.800`, suggesting winter heating demand effects in this period.
+For each country, the project calculates z-scores for:
 
-## Current Impact Metrics
+- daily average electricity price
+- daily average electricity load
 
-- Countries tracked: 4 (`IT`, `FR`, `ES`, `DE_LU`).
-- Date range loaded: `2024-01-01` to `2024-03-31`.
-- Weather fact rows: 8,736.
-- Electricity load fact rows: 8,736.
-- Electricity price fact rows: 8,736.
-- Total hourly fact rows: 26,208.
-- Daily analytics mart rows: 364.
-- Dashboard tabs: 5.
-- Latest 3-month local Prefect run completed in about 14 seconds.
+A day is flagged when the absolute z-score is at least `2`. This is not meant to be an advanced machine learning model. I chose it because it is easy to explain, works well for a first MVP, and gives recruiters a clear example of analytical logic added after the ETL pipeline.
 
-## How to Run Locally
+## Testing and CI
 
-Create a `.env` file:
+The test suite covers:
 
-```bash
-cp .env.example .env
-```
+- weather cleaning
+- ENTSO-E load resampling
+- price cleaning
+- duplicate handling
+- validation failures for bad/null data
+- anomaly detection logic
 
-Run a small Open-Meteo API smoke test:
+GitHub Actions runs the tests automatically on each push to `main`.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install pandas requests
-python -m scripts.run_weather_sample --start-date 2024-01-01 --end-date 2024-01-03 --countries IT FR
-```
-
-The sample output is written to `data/processed/`.
-
-Docker is required for the PostgreSQL and dashboard workflow. Install Docker Desktop first if `docker --version` does not work.
-
-Start PostgreSQL and the dashboard:
-
-```bash
-docker compose up --build
-```
-
-Run the Prefect flow manually:
-
-```bash
-python -m src.pipeline.prefect_flow
-```
-
-After receiving ENTSO-E API access, add the token to `.env`:
-
-```bash
-ENTSOE_API_KEY=your_token_here
-```
-
-Rebuild the Docker image so the ENTSO-E client is installed, then run the full weather plus energy pipeline:
-
-```bash
-docker compose up -d --build
-docker compose exec -e INCLUDE_ENERGY=true dashboard python -m src.pipeline.prefect_flow
-```
-
-Run automated tests:
+Run the tests locally with:
 
 ```bash
 docker compose run --rm dashboard python -m pytest tests
 ```
 
-The test suite covers weather cleaning, ENTSO-E load resampling, price cleaning, duplicate handling, and validation checks for invalid/null data.
+## How to Run Locally
 
-## Resume-Ready Summary
+Create a local environment file:
 
-Built an end-to-end European energy and weather analytics pipeline using Python, PostgreSQL, Docker, Prefect, SQL, and Streamlit to ingest, validate, store, analyze, and visualize public API data.
+```bash
+cp .env.example .env
+```
+
+Add your ENTSO-E token to `.env`:
+
+```bash
+ENTSOE_API_KEY=your_token_here
+```
+
+Start PostgreSQL and the dashboard:
+
+```bash
+docker compose up -d --build
+```
+
+Run the full pipeline:
+
+```bash
+docker compose exec -e INCLUDE_ENERGY=true dashboard python -m src.pipeline.prefect_flow
+```
+
+Open the dashboard:
+
+```text
+http://localhost:8501
+```
+
+## What Is Finished
+
+- Open-Meteo weather extraction
+- ENTSO-E load and price extraction
+- PostgreSQL schema and fact tables
+- Daily analytics mart
+- Docker Compose setup
+- Prefect pipeline
+- Streamlit dashboard
+- Data validation checks
+- Anomaly detection
+- pytest test suite
+- GitHub Actions CI
+- README documentation and dashboard screenshots
+
+## Limitations and Next Steps
+
+This is a working project, but it is not finished.
+
+Next improvements I would make:
+
+- Add renewable generation data from ENTSO-E.
+- Add a small forecasting model after loading a longer time period.
+- Add more robust data quality reports.
+- Deploy a demo version of the dashboard online.
+- Expand the dashboard screenshots after the anomaly tab is finalized.
+
+## Resume Summary
+
+Built a Dockerized energy and weather analytics pipeline using Python, PostgreSQL, Prefect, ENTSO-E, Open-Meteo, SQL, Streamlit, pytest, and GitHub Actions. The project loads 26,208 hourly fact rows for four European markets, builds a daily analytics mart, validates the data, detects simple price/load anomalies, and presents the results in an interactive dashboard.
