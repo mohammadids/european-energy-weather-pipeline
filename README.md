@@ -2,11 +2,11 @@
 
 Author: **Mohammad Mohammadi**
 
-Status: **working MVP**
+Status: **completed MVP**
 
 This is my end-to-end data engineering portfolio project. I built it to practice the parts of a real analytics pipeline that are usually missing from notebook-only projects: API extraction, cleaning, PostgreSQL storage, scheduled ETL logic, data validation, testing, Docker, and a dashboard.
 
-The current version combines weather data from Open-Meteo with electricity load and day-ahead price data from ENTSO-E for Italy, France, Spain, and Germany/Luxembourg.
+The completed MVP combines weather data from Open-Meteo with electricity load and day-ahead price data from ENTSO-E for Italy, France, Spain, and Germany/Luxembourg.
 
 ## What the Project Answers
 
@@ -14,7 +14,7 @@ The main question I am exploring is:
 
 > How do weather conditions relate to electricity demand and electricity prices across selected European markets?
 
-At this stage the project focuses on three months of hourly data from `2024-01-01` to `2024-03-31`. Renewable generation is still planned, so the current analysis is about weather, load, and prices.
+The project scope is three months of hourly data from `2024-01-01` to `2024-03-31`. I kept the scope focused on weather, electricity load, and day-ahead prices so the pipeline could be completed end to end.
 
 ## Current Results
 
@@ -65,7 +65,7 @@ Notes:
 
 - ENTSO-E load data can be sub-hourly for some countries. I resample it to hourly averages before loading it.
 - Italy day-ahead price data is queried from the `IT_NORD` bidding zone and stored under `IT` in this project.
-- Eurostat and renewable generation data are not included yet.
+- Eurostat and renewable generation data are outside the scope of this completed MVP.
 
 ## Architecture
 
@@ -134,7 +134,7 @@ The project uses PostgreSQL with dimension and fact tables:
 - `fact_generation_hourly`
 - `mart_daily_country_energy_weather`
 
-The dashboard reads from the daily mart for most analysis. The source fact tables are still available for row counts, coverage checks, and debugging.
+The dashboard reads from the daily mart for most analysis. The source fact tables are also available for row counts, coverage checks, and debugging.
 
 ## Pipeline Steps
 
@@ -181,7 +181,7 @@ For each country, the project calculates z-scores for:
 - daily average electricity price
 - daily average electricity load
 
-A day is flagged when the absolute z-score is at least `2`. This is not meant to be an advanced machine learning model. I chose it because it is easy to explain, works well for a first MVP, and gives recruiters a clear example of analytical logic added after the ETL pipeline.
+A day is flagged when the absolute z-score is at least `2`. This is not meant to be an advanced machine learning model. I chose it because it is easy to explain, fits the available data, and gives the dashboard a practical way to surface unusual daily price and load values.
 
 ## Testing and CI
 
@@ -234,7 +234,7 @@ Open the dashboard:
 http://localhost:8501
 ```
 
-## What Is Finished
+## Completed Scope
 
 - Open-Meteo weather extraction
 - ENTSO-E load and price extraction
@@ -249,17 +249,16 @@ http://localhost:8501
 - GitHub Actions CI
 - README documentation and dashboard screenshots
 
-## Limitations and Next Steps
+## Scope Notes
 
-This is a working project, but it is not finished.
+This repository is complete as an MVP. I intentionally kept the dataset to four markets and three months of hourly data so the project would be small enough to run locally and still show the full workflow from ingestion to dashboard.
 
-Next improvements I would make:
+Things I would consider as future extensions, but not as requirements for this version:
 
 - Add renewable generation data from ENTSO-E.
-- Add a small forecasting model after loading a longer time period.
-- Add more robust data quality reports.
-- Deploy a demo version of the dashboard online.
-- Expand the dashboard screenshots after the anomaly tab is finalized.
+- Add a forecasting model after loading a longer time period.
+- Add more detailed data quality reporting.
+- Deploy a fully interactive public Streamlit dashboard.
 
 ## Resume Summary
 
