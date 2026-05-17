@@ -164,7 +164,11 @@ Dashboard overview:
 
 ![Dashboard overview](docs/screenshots/dashboard-overview.png)
 
-Country summary:
+Anomaly detection tab:
+
+![Dashboard anomalies](docs/screenshots/dashboard-anomalies.png)
+
+Country summary table:
 
 ![Country summary](docs/screenshots/country-summary.png)
 
